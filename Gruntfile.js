@@ -295,11 +295,11 @@ module.exports = function(grunt) {
 	----------------------------------------------------------------------------------------------------*/
 
 	config.clean.build = [
-		'build/out/',
-		'build/component/'
+		'build/out/*',
+		'build/component/*'
 	];
 
-	config.clean.dist = 'dist/';
+	config.clean.dist = 'dist/*';
 
 
 
