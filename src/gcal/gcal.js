@@ -1,11 +1,9 @@
-/*
- * FullCalendar v@VERSION Google Calendar Plugin
+/*!
+ * <%= pkg.title %> v<%= pkg.version %> Google Calendar Plugin
  *
- * Copyright (c) 2011 Adam Shaw
+ * (c) <%= pkg.copyright %>
  * Dual licensed under the MIT and GPL licenses, located in
  * MIT-LICENSE.txt and GPL-LICENSE.txt respectively.
- *
- * Date: @DATE
  *
  */
  

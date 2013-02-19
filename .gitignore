@@ -1,3 +1,4 @@
-build/fullcalendar
-build/fullcalendar-*
+build/out
+build/component
 dist
+node_modules
