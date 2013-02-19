@@ -38,7 +38,7 @@ else if (typeof window !== 'undefined') {
 
 	// determine the current script's directory
 	for (i=0; i<scripts.length; i++) {
-		var match = (scripts[i].getAttribute('src') || '').match(/^(.*)\/build\/dependencies\.js/);
+		var match = (scripts[i].getAttribute('src') || '').match(/^(.*)\/build\/deps\.js/);
 		if (match) {
 			root = match[1];
 			break;

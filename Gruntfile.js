@@ -26,7 +26,7 @@ module.exports = function(grunt) {
 
 
 	// files that the demos might need in the distributable
-	var dependencyFiles = require('./build/dependencies.js');
+	var depFiles = require('./build/deps.js');
 
 
 	/* Important Top-Level Tasks
@@ -38,7 +38,7 @@ module.exports = function(grunt) {
 		'clean:build',
 		'submodules',
 		'uglify',
-		'copy:dependencies',
+		'copy:deps',
 		'copy:demos',
 		'copy:misc',
 		'compress'
@@ -177,10 +177,10 @@ module.exports = function(grunt) {
 	/* Copy Dependencies
 	----------------------------------------------------------------------------------------------------*/
 
-	config.copy.dependencies = {
+	config.copy.deps = {
 		expand: true,
 		flatten: true,
-		src: dependencyFiles,
+		src: depFiles,
 		dest: 'build/out/jquery/' // all depenencies will go in the jquery/ directory for now
 		                          // (because we only have jquery and jquery-ui)
 	};
@@ -207,10 +207,10 @@ module.exports = function(grunt) {
 		return content.replace(
 			/(<script[^>]*src=['"])(.*?)(['"][\s\S]*?<\/script>)/g,
 			function(full, before, src, after) {
-				if (src == '../build/dependencies.js') {
+				if (src == '../build/deps.js') {
 					var scriptTags = [];
-					for (var i=0; i<dependencyFiles.length; i++) {
-						var fileName = dependencyFiles[i].replace(/.*\//, '');
+					for (var i=0; i<depFiles.length; i++) {
+						var fileName = depFiles[i].replace(/.*\//, '');
 						scriptTags.push("<script src='../jquery/" + fileName + "'></script>"); // all dependencies are in jquery/ for now
 					}
 					return scriptTags.join("\n");
