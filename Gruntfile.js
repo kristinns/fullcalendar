@@ -1,4 +1,6 @@
 
+var _ = require('underscore');
+
 module.exports = function(grunt) {
 
 	// Load required NPM tasks.
@@ -11,9 +13,15 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch'); // Very useful for development. See README.
 
 
-	// this will eventually get passed to grunt.initConfig
-	var config = {
-		pkg: grunt.file.readJSON('package.json'), // do this primarily for templating (<%= %>)
+	// read config files, and combine into one "meta" object
+	var packageConfig = grunt.file.readJSON('package.json');
+	var componentConfig = grunt.file.readJSON('component.json');
+	var pluginConfig = grunt.file.readJSON('fullcalendar.jquery.json');
+	var meta = _.extend({}, packageConfig, componentConfig, pluginConfig);
+	
+	
+	var config = { // this will eventually get passed to grunt.initConfig
+		meta: meta, // do this primarily for templating (<%= %>)
 
 		// initialize multitasks
 		concat: {},
@@ -128,9 +136,7 @@ module.exports = function(grunt) {
 		options: {
 			process: true // replace template variables
 		},
-		src: [
-			'src/common/print.css'
-		],
+		src: 'src/common/print.css',
 		dest: 'build/out/fullcalendar/fullcalendar.print.css'
 	};
 
@@ -149,9 +155,7 @@ module.exports = function(grunt) {
 		options: {
 			process: true // replace template variables
 		},
-		src: [
-			'src/gcal/gcal.js'
-		],
+		src: 'src/gcal/gcal.js',
 		dest: 'build/out/fullcalendar/gcal.js'
 	};
 
@@ -169,7 +173,7 @@ module.exports = function(grunt) {
 			preserveComments: 'some' // keep comments starting with /*!
 		},
 		expand: true,
-		src: [ 'build/out/fullcalendar/fullcalendar.js' ],
+		src: 'build/out/fullcalendar/fullcalendar.js',
 		ext: '.min.js'
 	}
 
@@ -194,35 +198,14 @@ module.exports = function(grunt) {
 			// while copying demo files over, rewrite <script> and <link> tags for new dependency locations
 			processContentExclude: 'demos/*/**', // don't process anything more than 1 level deep (like assets)
 			processContent: function(content) {
-				content = rewriteDemoScriptTags(content);
 				content = rewriteDemoStylesheetTags(content);
+				content = rewriteDemoScriptTags(content);
 				return content;
 			}
 		},
 		src: 'demos/**',
 		dest: 'build/out/'
 	};
-
-	function rewriteDemoScriptTags(content) {
-		return content.replace(
-			/(<script[^>]*src=['"])(.*?)(['"][\s\S]*?<\/script>)/g,
-			function(full, before, src, after) {
-				if (src == '../build/deps.js') {
-					var scriptTags = [];
-					for (var i=0; i<depFiles.length; i++) {
-						var fileName = depFiles[i].replace(/.*\//, '');
-						scriptTags.push("<script src='../jquery/" + fileName + "'></script>"); // all dependencies are in jquery/ for now
-					}
-					return scriptTags.join("\n");
-				}
-				else {
-					src = src.replace('../build/out/', '../');
-					src = src.replace('/fullcalendar.', '/fullcalendar.min.'); // use minified version of main JS file
-					return before + src + after;
-				}
-			}
-		);
-	}
 
 	function rewriteDemoStylesheetTags(content) {
 		return content.replace(
@@ -234,15 +217,37 @@ module.exports = function(grunt) {
 		);
 	}
 
+	function rewriteDemoScriptTags(content) {
+		return content.replace(
+			/(<script[^>]*src=['"])(.*?)(['"][\s\S]*?<\/script>)/g,
+			function(full, before, src, after) {
+				if (src == '../build/deps.js') {
+					return buildDepScriptTags();
+				}
+				else {
+					src = src.replace('../build/out/', '../');
+					src = src.replace('/fullcalendar.', '/fullcalendar.min.'); // use minified version of main JS file
+					return before + src + after;
+				}
+			}
+		);
+	}
+
+	function buildDepScriptTags() {
+		var tags = [];
+		for (var i=0; i<depFiles.length; i++) {
+			var fileName = depFiles[i].replace(/.*\//, ''); // get file's basename
+			tags.push("<script src='../jquery/" + fileName + "'></script>"); // all dependencies are in jquery/ for now
+		}
+		return tags.join("\n");
+	}
+
 
 	/* Copy Misc Files
 	----------------------------------------------------------------------------------------------------*/
 
 	config.copy.misc = {
-		src: [
-			'*LICENSE.txt',
-			'changelog.txt'
-		],
+		src: "*.txt", // licenses and changelog
 		dest: 'build/out/'
 	};
 
@@ -252,23 +257,25 @@ module.exports = function(grunt) {
 
 	config.compress.all = {
 		options: {
-			archive: 'dist/<%= pkg.name %>-<%= pkg.version %>.zip'
+			archive: 'dist/<%= meta.name %>-<%= meta.version %>.zip'
 		},
 		expand: true,
 		cwd: 'build/out/',
 		src: '**',
-		dest: '<%= pkg.name %>-<%= pkg.version %>/' // have a top-level directory in the ZIP file
+		dest: '<%= meta.name %>-<%= meta.version %>/' // have a top-level directory in the ZIP file
 	};
 
 
-	/* Bower Component (http://twitter.github.com/bower/)
+	/* Bower Component
 	----------------------------------------------------------------------------------------------------*/
+	// http://twitter.github.com/bower/
 
-	grunt.registerTask('component', [
+	grunt.registerTask('component', 'Build the FullCalendar component for the Bower package manager', [
 		'clean:build',
 		'submodules',
 		'uglify', // we want the minified JS in there
 		'copy:component',
+		'copy:componentReadme',
 		'componentConfig'
 	]);
 
@@ -276,17 +283,22 @@ module.exports = function(grunt) {
 		expand: true,
 		cwd: 'build/out/fullcalendar/',
 		src: '**',
-		dest: 'build/component/', // this is where all files will end up
+		dest: 'build/component/',
+	};
+
+	config.copy.componentReadme = {
+		src: 'build/component-readme.md',
+		dest: 'build/component/readme.md'
 	};
 
 	grunt.registerTask('componentConfig', function() {
-		// start with a pre-populated component.json file and fill in the "name" and "version"
-		var componentConfig = grunt.file.readJSON('build/component.json');
-		componentConfig.name = config.pkg.name;
-		componentConfig.version = config.pkg.version;
 		grunt.file.write(
 			'build/component/component.json',
-			JSON.stringify(componentConfig, null, 2)
+			JSON.stringify(
+				_.extend({}, pluginConfig, componentConfig), // combine the 2 configs
+				null, // replacer
+				2 // indent
+			)
 		);
 	});
 

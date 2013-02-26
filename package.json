@@ -1,10 +1,6 @@
 {
-  "name": "fullcalendar",
-  "title": "FullCalendar",
-  "version": "1.5.4",
-  "homepage": "http://arshaw.com/fullcalendar/",
-  "copyright": "2013 Adam Shaw",
   "devDependencies": {
+    "underscore": "~1.4.4",
     "grunt": "~0.4.0",
     "grunt-contrib-concat": "~0.1.2",
     "grunt-contrib-uglify": "~0.1.1",

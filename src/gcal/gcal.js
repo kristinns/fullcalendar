@@ -1,7 +1,7 @@
 /*!
- * <%= pkg.title %> v<%= pkg.version %> Google Calendar Plugin
+ * <%= meta.title %> v<%= meta.version %> Google Calendar Plugin
  *
- * (c) <%= pkg.copyright %>
+ * (c) <%= meta.copyright %>
  * Dual licensed under the MIT and GPL licenses, located in
  * MIT-LICENSE.txt and GPL-LICENSE.txt respectively.
  *
