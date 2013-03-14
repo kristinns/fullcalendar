@@ -549,11 +549,18 @@ function AgendaView(element, calendar, viewName) {
 		function constrain(n) {
 			return Math.max(slotScrollerTop, Math.min(slotScrollerBottom, n));
 		}
+    var timeSlots = opt('timeSlots');
+    var start = slotTableTop,
+    end;
 		for (var i=0; i<slotCnt; i++) {
-			rows.push([
-				constrain(slotTableTop + slotHeight*i),
-				constrain(slotTableTop + slotHeight*(i+1))
-			]);
+      start += timeSlots[i];
+      end = start + timeSlots[i+1];
+
+      rows.push([
+        constrain(start),
+        constrain(end)
+      ]);
+
 		}
 	});
 	
@@ -760,7 +767,7 @@ function AgendaView(element, calendar, viewName) {
 					var d2 = cellDate(cell);
 					dates = [
 						d1,
-						addMinutes(cloneDate(d1), opt('slotMinutes')),
+						addMinutes(cloneDate(d1), 0),
 						d2,
 						addMinutes(cloneDate(d2), opt('slotMinutes'))
 					].sort(cmp);
