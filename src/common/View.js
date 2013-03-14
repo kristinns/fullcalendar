@@ -43,13 +43,15 @@ function View(element, calendar, viewName) {
 	
 	function opt(name, viewNameOverride) {
 		var v = options[name];
+    if($.isArray(v))
+      return v;
 		if (typeof v == 'object') {
 			return smartProperty(v, viewNameOverride || viewName);
 		}
 		return v;
 	}
 
-	
+
 	function trigger(name, thisObj) {
 		return calendar.trigger.apply(
 			calendar,

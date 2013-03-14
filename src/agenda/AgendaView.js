@@ -13,7 +13,9 @@ setDefaults({
 		agenda: .5
 	},
 	minTime: 0,
-	maxTime: 24
+	maxTime: 24,
+  timeSlots: [],
+  minimumTimeOnAxis: 25
 });
 
 
@@ -277,18 +279,21 @@ function AgendaView(element, calendar, viewName) {
 		maxd = addMinutes(cloneDate(d), maxMinute);
 		addMinutes(d, minMinute);
 		slotCnt = 0;
+    var timeSlots = opt('timeSlots');
 		for (i=0; d < maxd; i++) {
 			minutes = d.getMinutes();
 			s +=
-				"<tr class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'>" +
-				"<th class='fc-agenda-axis " + headerClass + "'>" +
-				((!slotNormal || !minutes) ? formatDate(d, opt('axisFormat')) : '&nbsp;') +
-				"</th>" +
+				"<tr style='height:" + timeSlots[i] + "px; vertical-align:top; font-size:10px; line-height: 10px;' class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'>" +
+				"<th class='fc-agenda-axis " + headerClass + "'>";
+        if (timeSlots[i] > 25)
+          s += formatDate(d, opt('axisFormat'))
+      s += "</th>" +
 				"<td class='" + contentClass + "'>" +
-				"<div style='position:relative'>&nbsp;</div>" +
+				"<div style='position:relative; font-size: 1px;height:5px;'></div>" +
 				"</td>" +
 				"</tr>";
-			addMinutes(d, opt('slotMinutes'));
+
+			addMinutes(d, timeSlots[i]);
 			slotCnt++;
 		}
 		s +=
