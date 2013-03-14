@@ -15,7 +15,7 @@ setDefaults({
 	minTime: 0,
 	maxTime: 24,
   timeSlots: [],
-  minimumTimeOnAxis: 25
+  minimumTimeOnAxis: 15
 });
 
 
@@ -285,15 +285,23 @@ function AgendaView(element, calendar, viewName) {
 			s +=
 				"<tr style='height:" + timeSlots[i] + "px; vertical-align:top; font-size:10px; line-height: 10px;' class='fc-slot" + i + ' ' + (!minutes ? '' : 'fc-minor') + "'>" +
 				"<th class='fc-agenda-axis " + headerClass + "'>";
-        if (timeSlots[i] > 25)
-          s += formatDate(d, opt('axisFormat'))
+
+        if (timeSlots[i] > opt('minimumTimeOnAxis')) {
+
+          s += formatDate(d, opt('axisFormat'));
+          addMinutes(d, timeSlots[i]);
+          s += " - " + formatDate(d, opt('axisFormat'));
+        }
+        else
+          addMinutes(d, timeSlots[i]);
+
       s += "</th>" +
 				"<td class='" + contentClass + "'>" +
 				"<div style='position:relative; font-size: 1px;height:5px;'></div>" +
 				"</td>" +
 				"</tr>";
 
-			addMinutes(d, timeSlots[i]);
+
 			slotCnt++;
 		}
 		s +=
@@ -624,9 +632,13 @@ function AgendaView(element, calendar, viewName) {
 		if (slotTop === undefined) {
 			slotTop = slotTopCache[slotI] = slotTable.find('tr:eq(' + slotI + ') td div')[0].offsetTop; //.position().top; // need this optimization???
 		}
-		return Math.max(0, Math.round(
-			slotTop - 1 + slotHeight * ((minutes % slotMinutes) / slotMinutes)
-		));
+    // If using custom timeSlots, then just return
+    if(!$.isEmptyObject(opt('timeSlots')))
+      return minutes;
+		else
+      return Math.max(0, Math.round(
+        slotTop - 1 + slotHeight * ((minutes % slotMinutes) / slotMinutes)
+      ));
 	}
 	
 	
